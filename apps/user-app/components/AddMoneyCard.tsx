@@ -5,7 +5,8 @@ import { Center } from "@repo/ui/center";
 import { Select } from "@repo/ui/select";
 import { useState } from "react";
 import { TextInput } from "@repo/ui/textinput";
-
+import prisma from "@repo/db/client";
+import { createONRampTransaction } from "../app/lib/actions/createOnRamptxn";
 const SUPPORTED_BANKS = [{
     name: "HDFC Bank",
     redirectUrl: "https://netbanking.hdfcbank.com"
@@ -15,11 +16,14 @@ const SUPPORTED_BANKS = [{
 }];
 
 export const AddMoney = () => {
+    const [amount, setAmount] = useState(0)
+    const [provider, setProvider] = useState(SUPPORTED_BANKS[0]?.name || "")
     const [redirectUrl, setRedirectUrl] = useState(SUPPORTED_BANKS[0]?.redirectUrl);
     return <Card title="Add Money">
     <div className="w-full">
-        <TextInput label={"Amount"} placeholder={"Amount"} onChange={() => {
-
+        <TextInput label={"Amount"} placeholder={"Amount"} onChange={(e) => {
+            setAmount(e)
+        
         }} />
         <div className="py-4 text-left">
             Bank
@@ -31,7 +35,8 @@ export const AddMoney = () => {
             value: x.name
         }))} />
         <div className="flex justify-center pt-4">
-            <Button onClick={() => {
+            <Button onClick={async () => {
+                await createONRampTransaction(amount * 100, provider)
                 window.location.href = redirectUrl || "";
             }}>
             Add Money
